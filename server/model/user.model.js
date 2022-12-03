@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  lastLoginTime:{
+    type :String,
+  }
 });
 
 const UserModel = mongoose.model("user", userSchema);
