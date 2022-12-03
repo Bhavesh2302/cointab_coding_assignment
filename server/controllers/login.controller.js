@@ -11,9 +11,9 @@ loginController.post("/", async (req, res) => {
 
   const user = await UserModel.findOne({ email });
 
-  const hash = user.password;
+  // const hash = user.password;
 
-  bcrypt.compare(password, hash, function (err, result) {
+  bcrypt.compare(password, user.password, function (err, result) {
     if (err) {
       res.send({ message: "Something went wrong please" });
     }

@@ -7,14 +7,18 @@ import {
   Input,
   InputGroup,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate()
+  const toast = useToast()
 
   const handleLoginUser = () => {
     const payload = {
@@ -33,10 +37,28 @@ const LoginPage = () => {
         console.log(res);
         if (res.message === "login successful" && res.token) {
           localStorage.setItem("userToken", res.token);
-        }
-        if (res.message === "login successful" && res.userData) {
           localStorage.setItem("userData", JSON.stringify(res.userData));
+          toast({
+            title: "Login Success",
+            position: "top",
+            description: "you are successfully logged in",
+            status: "success",
+            duration: 2000,
+            isClosable: true,
+          });
+          navigate("/")
         }
+        else{
+          toast({
+            title: "Login Failed",
+            position: "top",
+            description: res.message,
+            status: "error",
+            duration: 2000,
+            isClosable: true,
+          });
+        }
+       
       });
   };
 
