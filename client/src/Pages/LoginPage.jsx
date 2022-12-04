@@ -34,7 +34,7 @@ const LoginPage = () => {
   const [lastLoginTime, setlastLoginTime] = useState("");
 
   const wrongCount = JSON.parse(localStorage.getItem("count"));
-  const upcomingDate = Number(lastLoginTime) + 5000;
+  const upcomingDate = Number(lastLoginTime) + 86400000;
 
   useEffect(() => {
     if (!currentRef.current) {
@@ -44,7 +44,7 @@ const LoginPage = () => {
             email: email,
           };
           console.log("payload", payload);
-          fetch(`http://localhost:7500/login/countupdate`, {
+          fetch(`https://cointabserver-production.up.railway.app/login/countupdate`, {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
@@ -76,7 +76,7 @@ const LoginPage = () => {
       password,
     };
 
-    fetch("http://localhost:7500/login", {
+    fetch("https://cointabserver-production.up.railway.app/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

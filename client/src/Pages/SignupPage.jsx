@@ -27,7 +27,7 @@ const SignupPage = () => {
       email,
       password,
     };
-    fetch("http://localhost:7500/signup", {
+    fetch("https://cointabserver-production.up.railway.app/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
