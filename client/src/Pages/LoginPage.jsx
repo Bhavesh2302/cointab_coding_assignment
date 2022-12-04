@@ -13,56 +13,62 @@ import { useState } from "react";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useRef } from "react";
+import {
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+} from "@chakra-ui/react";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const currentRef = useRef();
   const navigate = useNavigate();
   const toast = useToast();
+  const [count, setCount] = useState(0);
+  const timerid = useRef(null);
+  let [timer, setTimer] = useState(86400000);
+  const [lastLoginTime, setlastLoginTime] = useState("");
 
   const wrongCount = JSON.parse(localStorage.getItem("count"));
-  const lastLoginTime = localStorage.getItem("lastLoginTime");
-  console.log(wrongCount);
-  console.log(lastLoginTime);
-
-  // const currentDate = Date.now()
-  // 86400000
-  const upcomingDate = Number(lastLoginTime) + 10000;
-  console.log(upcomingDate);
-
-
-  let currentTime = Date.now();
-
+  const upcomingDate = Number(lastLoginTime) + 5000;
 
   useEffect(() => {
-    if (currentTime >= upcomingDate && wrongCount === 5) {
-      const payload = {
-        email: email,
+    if (!currentRef.current) {
+      let Timer = setTimeout(() => {
+        if (count > 4) {
+          const payload = {
+            email: email,
+          };
+          console.log("payload", payload);
+          fetch(`http://localhost:7500/login/countupdate`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          })
+            .then((res) => res.json())
+            .then((res) => {
+              if (res.message === "Count update successfully") {
+                setCount(res.wrongCount);
+                localStorage.setItem("count", JSON.stringify(res.wrongCount));
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
+      }, 86400000);
+
+      return () => {
+        clearTimeout(Timer);
       };
-      console.log("payload", payload);
-      fetch(`http://localhost:7500/login/countupdate`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      })
-        .then((res) => res.json())
-        .then((res) => {
-
-          if (res.message === "Count update successfully") {
-  
-            localStorage.setItem("count", JSON.stringify(res.wrongCount));
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
     }
-  }, [wrongCount]);
-
-  // Date.now() > upcomingDate  && wongcount===5
+  }, [lastLoginTime, count]);
 
   const handleLoginUser = () => {
     const payload = {
@@ -79,7 +85,6 @@ const LoginPage = () => {
     })
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
         if (res.message === "login successful" && res.token) {
           localStorage.setItem("userToken", res.token);
           localStorage.setItem("userData", JSON.stringify(res.userData));
@@ -92,30 +97,58 @@ const LoginPage = () => {
             isClosable: true,
           });
           navigate("/");
-        } 
+        }
         if (res.message === "Something went wrong please") {
-          console.log(res.wrongCount);
+          setCount(res.wrongCount);
           localStorage.setItem("count", JSON.stringify(res.wrongCount));
           toast({
             title: "Login Failed",
             position: "top",
-            description: res.message,
+            description: "Something went wrong please try again",
             status: "error",
             duration: 2000,
             isClosable: true,
           });
-        } 
-         if (
+        }
+        if (
           res.message ===
           "You had typed 5 attempts you are now blocked for 24 hrs"
         ) {
           localStorage.setItem("lastLoginTime", res.lastTimeLogin);
+          setlastLoginTime(res.lastTimeLogin);
           localStorage.setItem("count", JSON.stringify(res.wrongCount));
+          setCount(res.wrongCount);
         }
       });
   };
 
-  // display={wrongCount === 5 ? "none": "block"}
+  function msToTime(duration) {
+    var milliseconds = Math.floor((duration % 1000) / 100),
+      seconds = Math.floor((duration / 1000) % 60),
+      minutes = Math.floor((duration / (1000 * 60)) % 60),
+      hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+
+    hours = hours < 10 ? "0" + hours : hours;
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+    return hours + ":" + minutes + ":" + seconds;
+  }
+  useEffect(() => {
+    if (count === 5) {
+      if (!timerid.current) {
+        let id = setInterval(() => {
+          setTimer((prev) => prev - 100);
+        }, 100);
+        timerid.current = id;
+      }
+    }
+    return () => {
+      clearTimeout(timerid.current);
+      timerid.current = null;
+    };
+  }, [count]);
+
   return (
     <Box
       w="100%"
@@ -123,15 +156,30 @@ const LoginPage = () => {
       justifyContent="center"
       alignItems={"center"}
     >
-      {wrongCount > 4 ? (
-        <Box>Too many attempts now your page will get updated after 24 hrs</Box>
+      {count === 5 ? (
+        <Alert
+          status="error"
+          variant="subtle"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+          height="400px"
+        >
+          <AlertIcon boxSize="40px" mr={0} />
+          <AlertTitle mt={4} mb={1} fontSize="lg">
+            Too many attempts wrong attempts!
+          </AlertTitle>
+          <AlertDescription maxWidth="sm">
+            your account is now blocked for {msToTime(timer)} hours
+          </AlertDescription>
+        </Alert>
       ) : (
         <Box w={{ base: "80%", sm: "80%", md: "60%", lg: "50%" }} h="500px">
           <Text mt="20px" fontWeight="bold" fontSize={"22px"}>
             Login Page
           </Text>
           <Box
-            // w={{ base: "80%", sm: "80%", md: "60%", lg: "80%" }}
             m="auto"
             mt="40px"
             height="400px"
@@ -182,14 +230,13 @@ const LoginPage = () => {
                 bg="#03989e"
                 color="white"
                 onClick={handleLoginUser}
-               
               >
                 Submit
               </Button>
             </Box>
           </Box>
         </Box>
-       )} 
+      )}
     </Box>
   );
 };

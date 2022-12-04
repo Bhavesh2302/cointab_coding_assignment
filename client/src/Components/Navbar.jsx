@@ -26,28 +26,32 @@ const Navbar = () => {
       </Box>
       <Flex
         w="75%"
-        fontSize={"20px"}
+        fontSize={{ base: "14px", sm: "14px", md: "16px", lg: "20px" }}
         color="white"
         justifyContent={"center"}
         alignItems="center"
-        gap="100px"
+        gap={{ base: "10px", sm: "10px", md: "30px", lg: "100px" }}
       >
         <Box>
-          <Link to="/">HomePage</Link>
+          <Link to="/">Home</Link>
         </Box>
         {userData ? (
           <Box>{userData.email}</Box>
         ) : (
           <Box>
-            <Link to="/login">LoginPage</Link>
+            <Link to="/login">Login</Link>
           </Box>
         )}
 
         <Box>
-          <Link to="/signup">SignupPage</Link>
+          <Link to="/signup">Signup</Link>
         </Box>
         {userToken && (
-          <Button variant="unstyled" onClick={handleLogoutUser}>
+          <Button
+            variant="unstyled"
+            onClick={handleLogoutUser}
+            fontSize={{ base: "12px", sm: "12px", md: "16px", lg: "20px" }}
+          >
             Logout
           </Button>
         )}

@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const signupController = Router();
 
 signupController.post("/", async (req, res) => {
-  const { name, email, password,} = req.body;
+  const { name, email, password } = req.body;
 
   bcrypt.hash(password, 8, async function (err, hash) {
     if (err) {

@@ -22,7 +22,10 @@ loginController.post("/", async (req, res) => {
         name: user.name,
         email: user.email,
       };
-      const WrongCount = await UserModel.updateOne({email},{$set:{wrongPasswordCount:0}})   
+      const WrongCount = await UserModel.updateOne(
+        { email },
+        { $set: { wrongPasswordCount: 0 } }
+      );
       let token = jwt.sign({ userId: user?._id }, process.env.SECRET_KEY);
       res.send({
         message: "login successful",
@@ -30,55 +33,59 @@ loginController.post("/", async (req, res) => {
         userData: userData,
       });
     } else {
+      const updateCount = await UserModel.updateOne(
+        { email },
+        { $inc: { wrongPasswordCount: 1 } }
+      );
 
-      const updateCount = await UserModel.updateOne({email},{$inc:{wrongPasswordCount : 1}})
+      const updatedUser = await UserModel.findOne({ email });
 
-      const updatedUser =  await UserModel.findOne({ email });
-      // console.log(updatedUser)
-         
-          const wrongCount =updatedUser?.wrongPasswordCount
+      const wrongCount = updatedUser?.wrongPasswordCount;
 
-          if(wrongCount > 4){
-            const lastLoginTime = await UserModel.updateOne({email},{$set:{lastLoginTime: Date.now()}})
-            const usersLastLogin = await UserModel.findOne({email})
-            console.log(usersLastLogin)
+      if (wrongCount > 4) {
+        const lastLoginTime = await UserModel.updateOne(
+          { email },
+          { $set: { lastLoginTime: Date.now() } }
+        );
+        const usersLastLogin = await UserModel.findOne({ email });
 
-            const lastTimeLogin = usersLastLogin?.lastLoginTime
+        const lastTimeLogin = usersLastLogin?.lastLoginTime;
 
-            // console.log(JSON.stringify(lastLoginTime)+60000)
-              
-            //  setTimeout(async()=>{
-            //   const WrongCount = await UserModel.findByIdAndUpdate({_id:user?._id},{$set:{wrongPasswordCount:0}})   
-            // },lastLoginTime+60000)
-            // console.log(timer)
-            // console.log(lastTimeLogin)
-           
-            res.send({ message: "You had typed 5 attempts you are now blocked for 24 hrs" ,wrongCount :wrongCount,lastTimeLogin:lastTimeLogin});
-          }
-          else{
-            res.send({ message: "Something went wrong please" ,wrongCount :wrongCount});
-          }
-       
+        res.send({
+          message: "You had typed 5 attempts you are now blocked for 24 hrs",
+          wrongCount: wrongCount,
+          lastTimeLogin: lastTimeLogin,
+        });
+      } else {
+        res.send({
+          message: "Something went wrong please",
+          wrongCount: wrongCount,
+        });
+      }
     }
   });
 });
 
-loginController.patch("/countupdate",async(req,res)=>{
+loginController.patch("/countupdate", async (req, res) => {
+  const { email } = req.body;
 
-  const {email} = req.body
-  console.log(email)
-  const user = await UserModel.findOne({email})
+  const user = await UserModel.findOne({ email });
 
-  if(user){
-    const WrongCount = await UserModel.updateOne({email},{wrongPasswordCount:0})   
-    const user = await UserModel.findOne({email})
-    res.send({message :"Count update successfully",wrongCount : user?.wrongPasswordCount})
+  if (user) {
+    const WrongCount = await UserModel.updateOne(
+      { email },
+      { $set: { wrongPasswordCount: 0 } }
+    );
+    const user = await UserModel.findOne({ email });
+
+    res.send({
+      message: "Count update successfully",
+      wrongCount: user?.wrongPasswordCount,
+    });
+  } else {
+    res.send({ message: "User Not Found" });
   }
-  else{
-    res.send({message:"User Not Found"})
-  }
-
-})
+});
 
 module.exports = {
   loginController,

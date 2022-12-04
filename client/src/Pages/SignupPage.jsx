@@ -14,16 +14,16 @@ import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { Navigate, useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
-    const [name,setName] = useState("")
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate()
-  const toast = useToast()
+  const navigate = useNavigate();
+  const toast = useToast();
 
   const handleSignupUser = () => {
     const payload = {
-        name,
+      name,
       email,
       password,
     };
@@ -36,7 +36,7 @@ const SignupPage = () => {
     })
       .then((res) => res.json())
       .then((res) => {
-        if (res.message === "signup sucessful" ) {
+        if (res.message === "signup sucessful") {
           toast({
             title: "Signup Success",
             position: "top",
@@ -45,19 +45,17 @@ const SignupPage = () => {
             duration: 2000,
             isClosable: true,
           });
-          navigate("/")
+          navigate("/");
+        } else if (res.message === "Something went wrong please try again") {
+          toast({
+            title: "Signup Failed",
+            position: "top",
+            description: res.message,
+            status: "error",
+            duration: 2000,
+            isClosable: true,
+          });
         }
-        else if(res.message === "Something went wrong please try again"){
-            toast({
-                title: "Signup Failed",
-                position: "top",
-                description: res.message,
-                status: 'error',
-                duration: 2000,
-                isClosable: true,
-              });
-        }
-       
       });
   };
 
@@ -80,7 +78,7 @@ const SignupPage = () => {
           SignUp
         </Text>
         <Box w="70%" m="auto">
-        <FormControl isRequired mt="20px">
+          <FormControl isRequired mt="20px">
             <FormLabel>Name</FormLabel>
             <Input
               type="text"
